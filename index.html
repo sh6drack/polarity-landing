@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POLARITY - Your AI Exocortex</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Helvetica Neue', 'Inter', Arial, sans-serif;
+      background: #0A0A0A;
+      color: #fff;
+    }
+
+    .slide {
+      width: 1280px;
+      height: 720px;
+      background: #0A0A0A;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-start;
+      padding: 80px;
+      page-break-after: always;
+    }
+
+    /* ORBITAL + ATOMS + SPECKLES */
+    .slide::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image:
+        /* Core nucleus glow */
+        radial-gradient(60px 60px at 88% 12%, rgba(78, 205, 196, 0.15) 0%, transparent 70%),
+
+        /* Large diffuse glows - Polarity colors */
+        radial-gradient(100px 100px at 15% 25%, rgba(78, 205, 196, 0.08) 0%, transparent 70%),
+        radial-gradient(120px 120px at 75% 70%, rgba(255, 160, 122, 0.07) 0%, transparent 70%),
+        radial-gradient(90px 90px at 50% 50%, rgba(187, 143, 206, 0.06) 0%, transparent 70%),
+
+        /* Medium atoms with glowing cores - Teal */
+        radial-gradient(4px 4px at 15% 20%, #4ECDC4 0%, rgba(78, 205, 196, 0.4) 40%, transparent 70%),
+        radial-gradient(5px 5px at 88% 12%, #4ECDC4 0%, rgba(78, 205, 196, 0.5) 40%, transparent 70%),
+        radial-gradient(3px 3px at 45% 85%, #4ECDC4 0%, rgba(78, 205, 196, 0.4) 40%, transparent 70%),
+
+        /* Medium atoms - Coral */
+        radial-gradient(5px 5px at 75% 30%, #FFA07A 0%, rgba(255, 160, 122, 0.4) 40%, transparent 70%),
+        radial-gradient(4px 4px at 25% 70%, #FFA07A 0%, rgba(255, 160, 122, 0.4) 40%, transparent 70%),
+        radial-gradient(3px 3px at 90% 55%, #FFA07A 0%, rgba(255, 160, 122, 0.3) 40%, transparent 70%),
+
+        /* Medium atoms - Purple */
+        radial-gradient(4px 4px at 60% 45%, #BB8FCE 0%, rgba(187, 143, 206, 0.4) 40%, transparent 70%),
+        radial-gradient(5px 5px at 10% 60%, #BB8FCE 0%, rgba(187, 143, 206, 0.4) 40%, transparent 70%),
+        radial-gradient(3px 3px at 35% 35%, #BB8FCE 0%, rgba(187, 143, 206, 0.3) 40%, transparent 70%),
+
+        /* Small floating speckles */
+        radial-gradient(2px 2px at 5% 15%, rgba(78, 205, 196, 0.7) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 12% 42%, rgba(255, 160, 122, 0.6) 0%, transparent 100%),
+        radial-gradient(2px 2px at 8% 78%, rgba(187, 143, 206, 0.6) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 22% 8%, rgba(78, 205, 196, 0.5) 0%, transparent 100%),
+        radial-gradient(2px 2px at 28% 55%, rgba(255, 160, 122, 0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 35% 92%, rgba(187, 143, 206, 0.5) 0%, transparent 100%),
+        radial-gradient(2px 2px at 42% 18%, rgba(78, 205, 196, 0.6) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 55% 65%, rgba(255, 160, 122, 0.5) 0%, transparent 100%),
+        radial-gradient(2px 2px at 62% 5%, rgba(187, 143, 206, 0.6) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 68% 88%, rgba(78, 205, 196, 0.5) 0%, transparent 100%),
+        radial-gradient(2px 2px at 78% 38%, rgba(255, 160, 122, 0.6) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 85% 72%, rgba(187, 143, 206, 0.5) 0%, transparent 100%),
+        radial-gradient(2px 2px at 92% 25%, rgba(78, 205, 196, 0.6) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 95% 95%, rgba(255, 160, 122, 0.5) 0%, transparent 100%),
+        radial-gradient(2px 2px at 18% 88%, rgba(187, 143, 206, 0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 72% 12%, rgba(78, 205, 196, 0.5) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* Subtle orbital overlay */
+    .slide::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(ellipse 500px 350px at 20% 30%, rgba(78, 205, 196, 0.025) 0%, transparent 50%),
+        radial-gradient(ellipse 400px 280px at 80% 65%, rgba(255, 160, 122, 0.02) 0%, transparent 50%),
+        radial-gradient(ellipse 450px 300px at 50% 80%, rgba(187, 143, 206, 0.02) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    h1 {
+      font-weight: 800;
+      font-size: 120px;
+      letter-spacing: -0.05em;
+      line-height: 0.9;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1.smaller {
+      font-size: 90px;
+    }
+
+    h2 {
+      font-weight: 300;
+      font-size: 42px;
+      letter-spacing: -0.02em;
+      opacity: 0.4;
+      margin-top: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    p {
+      font-weight: 300;
+      font-size: 26px;
+      line-height: 1.5;
+      opacity: 0.55;
+      max-width: 700px;
+      position: relative;
+      z-index: 1;
+    }
+
+    ul {
+      list-style: none;
+      position: relative;
+      z-index: 1;
+    }
+
+    li {
+      font-weight: 300;
+      font-size: 22px;
+      opacity: 0.5;
+      margin: 10px 0;
+    }
+
+    .num {
+      font-weight: 100;
+      font-size: 180px;
+      opacity: 0.06;
+      position: absolute;
+      top: 50px;
+      right: 70px;
+      letter-spacing: -0.05em;
+    }
+
+    .label {
+      font-weight: 500;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      opacity: 0.2;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    code {
+      font-family: 'SF Mono', 'Monaco', monospace;
+      font-size: 18px;
+      opacity: 0.3;
+      display: block;
+      white-space: pre;
+      position: relative;
+      z-index: 1;
+    }
+
+    em { font-style: normal; opacity: 0.25; }
+
+    /* Accent colors */
+    .teal { color: #4ECDC4; opacity: 1; }
+    .coral { color: #FFA07A; opacity: 1; }
+    .purple { color: #BB8FCE; opacity: 1; }
+
+    /* Feature grid */
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .features li {
+      font-size: 20px;
+      margin: 6px 0;
+    }
+
+    /* Orbital icon */
+    .orbital-icon {
+      position: absolute;
+      top: 60px;
+      left: 80px;
+      width: 50px;
+      height: 50px;
+      opacity: 0.15;
+    }
+
+    /* Stats */
+    .stat {
+      font-weight: 100;
+      font-size: 80px;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat-label {
+      font-weight: 400;
+      font-size: 16px;
+      opacity: 0.35;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-top: 8px;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 80px;
+      margin-bottom: 40px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- SLIDE 1: Title -->
+<div class="slide">
+  <svg class="orbital-icon" viewBox="0 0 100 100">
+    <ellipse cx="50" cy="50" rx="40" ry="12" fill="none" stroke="#4ECDC4" stroke-width="2" transform="rotate(-60 50 50)"/>
+    <ellipse cx="50" cy="50" rx="40" ry="12" fill="none" stroke="#FFA07A" stroke-width="2" transform="rotate(60 50 50)"/>
+    <ellipse cx="50" cy="50" rx="40" ry="12" fill="none" stroke="#BB8FCE" stroke-width="2"/>
+    <circle cx="50" cy="50" r="10" fill="#4ECDC4"/>
+  </svg>
+  <span class="num">01</span>
+  <span class="label">AI Exocortex</span>
+  <h1>POLARITY</h1>
+  <h2>Your brain, mapped</h2>
+</div>
+
+<!-- SLIDE 2: Problem -->
+<div class="slide">
+  <span class="num">02</span>
+  <span class="label">Problem</span>
+  <h1>SCATTERED</h1>
+  <p>You know things you've forgotten you know</p>
+  <p>Notes decay. Links rot. Context fades.</p>
+  <p>Your knowledge has no shape.</p>
+</div>
+
+<!-- SLIDE 3: Vision -->
+<div class="slide">
+  <span class="num">03</span>
+  <span class="label">Vision</span>
+  <h1>SHAPE</h1>
+  <p>What if knowledge had form</p>
+  <p>What if you could see everything you understand</p>
+  <p>What if AI could help you become who you want to be</p>
+</div>
+
+<!-- SLIDE 4: Core Concept -->
+<div class="slide">
+  <span class="num">04</span>
+  <span class="label">Core</span>
+  <h1>ANATOMICAL</h1>
+  <p>Not a metaphor</p>
+  <p>A 3D model mapped to real brain regions</p>
+  <p>Your knowledge, spatially organized</p>
+</div>
+
+<!-- SLIDE 5: Brain Regions -->
+<div class="slide">
+  <span class="num">05</span>
+  <span class="label">Architecture</span>
+  <h1>REGIONS</h1>
+  <ul>
+    <li><span class="teal">Prefrontal</span> — goals, planning, abstract reasoning</li>
+    <li><span class="coral">Hippocampus</span> — memories, experiences, events</li>
+    <li><span class="purple">Temporal</span> — language, concepts, semantic memory</li>
+    <li><span class="teal">Motor Cortex</span> — skills, procedures</li>
+    <li><span class="coral">Amygdala</span> — emotions, fears, anxieties</li>
+    <li><span class="purple">Parietal</span> — spatial reasoning, math</li>
+  </ul>
+  <p><em>9 anatomical regions total</em></p>
+</div>
+
+<!-- SLIDE 6: Conversation Interface -->
+<div class="slide">
+  <span class="num">06</span>
+  <span class="label">Interface</span>
+  <h1>TALK</h1>
+  <p>You don't enter data</p>
+  <p>You have a conversation</p>
+  <p>Polarity extracts what you know</p>
+  <p><em>Daily journals • Streaming responses • Context-aware</em></p>
+</div>
+
+<!-- SLIDE 7: Knowledge Graph -->
+<div class="slide">
+  <span class="num">07</span>
+  <span class="label">Knowledge</span>
+  <h1>GRAPH</h1>
+  <p>Nodes for everything you know</p>
+  <p>Connections with relationship types</p>
+  <p>Semantic + keyword hybrid search</p>
+  <p><em>Concepts • Facts • Skills • Memories • Goals • Beliefs</em></p>
+</div>
+
+<!-- SLIDE 8: 3D Visualization -->
+<div class="slide">
+  <span class="num">08</span>
+  <span class="label">Visualization</span>
+  <h1>THREE.JS</h1>
+  <p>Force-directed node cloud</p>
+  <p>Clustered by brain region</p>
+  <p>Interactive 3D exploration</p>
+  <p><em>Your mind rendered in space</em></p>
+</div>
+
+<!-- SLIDE 9: Time Machine -->
+<div class="slide">
+  <span class="num">09</span>
+  <span class="label">Temporal</span>
+  <h1 class="smaller">TIME MACHINE</h1>
+  <p>Snapshots at midnight</p>
+  <p>Travel to any date</p>
+  <p>See what changed</p>
+  <p><em>Git for your mind</em></p>
+</div>
+
+<!-- SLIDE 10: Future Self -->
+<div class="slide">
+  <span class="num">10</span>
+  <span class="label">Projection</span>
+  <h1 class="smaller">FUTURE SELF</h1>
+  <p>Set a target date and scenario</p>
+  <p>AI generates projected knowledge</p>
+  <p>Chat with who you'll become</p>
+  <p><em>Multiple timelines • Drift detection • Goal tracking</em></p>
+</div>
+
+<!-- SLIDE 11: Learning System -->
+<div class="slide">
+  <span class="num">11</span>
+  <span class="label">Growth</span>
+  <h1>LEARNING</h1>
+  <p>Enable learning mode on any timeline</p>
+  <p>AI generates milestones</p>
+  <p>Structured sessions to close the gap</p>
+  <p><em>Become your future self</em></p>
+</div>
+
+<!-- SLIDE 12: Task Execution -->
+<div class="slide">
+  <span class="num">12</span>
+  <span class="label">Action</span>
+  <h1>TASKS</h1>
+  <p>AI identifies actionable tasks</p>
+  <p>Research • Analysis • Execution plans</p>
+  <p>Approval workflow before execution</p>
+  <p><em>MCP tool integration • Real-time streaming</em></p>
+</div>
+
+<!-- SLIDE 13: Safety -->
+<div class="slide">
+  <span class="num">13</span>
+  <span class="label">Wellbeing</span>
+  <h1>SAFETY</h1>
+  <p>Session time limits and break reminders</p>
+  <p>Real-time sentiment analysis</p>
+  <p>Crisis resources when needed</p>
+  <p><em>Belief vs fact tracking • Reality anchoring</em></p>
+</div>
+
+<!-- SLIDE 14: File Sync -->
+<div class="slide">
+  <span class="num">14</span>
+  <span class="label">Persistence</span>
+  <h1>SYNC</h1>
+  <p>Bi-directional file sync</p>
+  <p>Markdown export with YAML frontmatter</p>
+  <p>Full git version control</p>
+  <p><em>Your brain lives on disk</em></p>
+</div>
+
+<!-- SLIDE 15: Dual Brain -->
+<div class="slide">
+  <span class="num">15</span>
+  <span class="label">Meta</span>
+  <h1 class="smaller">DUAL BRAIN</h1>
+  <p>Polarity has its own knowledge base</p>
+  <p>Tracks patterns about you</p>
+  <p>Compare your brain with Polarity's</p>
+  <p><em>AI that knows itself</em></p>
+</div>
+
+<!-- SLIDE 16: All Features -->
+<div class="slide">
+  <span class="num">16</span>
+  <span class="label">Everything</span>
+  <h1>FEATURES</h1>
+  <ul class="features">
+    <li><span class="teal">•</span> 3D Brain Visualization</li>
+    <li><span class="coral">•</span> Conversational AI (Claude)</li>
+    <li><span class="purple">•</span> Knowledge Graph</li>
+    <li><span class="teal">•</span> Semantic Search</li>
+    <li><span class="coral">•</span> Time Machine Snapshots</li>
+    <li><span class="purple">•</span> Future Self Projection</li>
+    <li><span class="teal">•</span> Learning Paths</li>
+    <li><span class="coral">•</span> Task Execution</li>
+    <li><span class="purple">•</span> Safety Monitoring</li>
+    <li><span class="teal">•</span> File Sync + Git</li>
+    <li><span class="coral">•</span> MCP Tools</li>
+    <li><span class="purple">•</span> LaTeX Documents</li>
+  </ul>
+</div>
+
+<!-- SLIDE 17: Stack -->
+<div class="slide">
+  <span class="num">17</span>
+  <span class="label">Stack</span>
+  <h1>BUILT WITH</h1>
+  <code>Electron 33        PostgreSQL + pgvector
+Next.js 14         Three.js + R3F
+Express 5          Socket.IO
+Claude AI          MCP Protocol</code>
+</div>
+
+<!-- SLIDE 18: Platform -->
+<div class="slide">
+  <span class="num">18</span>
+  <span class="label">Platform</span>
+  <h1>DESKTOP</h1>
+  <p>Native macOS application</p>
+  <p>Setup wizard for API keys</p>
+  <p>System tray integration</p>
+  <p><em>Your brain, always with you</em></p>
+</div>
+
+<!-- SLIDE 19: Why -->
+<div class="slide">
+  <span class="num">19</span>
+  <span class="label">Why</span>
+  <h1>MEMORY</h1>
+  <p>Knowledge management failed</p>
+  <p>This gives your mind a body</p>
+  <p>A timeline</p>
+  <p>A future</p>
+</div>
+
+<!-- SLIDE 20: End -->
+<div class="slide">
+  <svg class="orbital-icon" viewBox="0 0 100 100" style="opacity: 0.25;">
+    <ellipse cx="50" cy="50" rx="40" ry="12" fill="none" stroke="#4ECDC4" stroke-width="2" transform="rotate(-60 50 50)"/>
+    <ellipse cx="50" cy="50" rx="40" ry="12" fill="none" stroke="#FFA07A" stroke-width="2" transform="rotate(60 50 50)"/>
+    <ellipse cx="50" cy="50" rx="40" ry="12" fill="none" stroke="#BB8FCE" stroke-width="2"/>
+    <circle cx="50" cy="50" r="10" fill="#4ECDC4"/>
+  </svg>
+  <span class="num">20</span>
+  <span class="label">End</span>
+  <h1>POLARITY</h1>
+  <h2>Know thyself</h2>
+</div>
+
+</body>
+</html>
