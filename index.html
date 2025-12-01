@@ -481,24 +481,25 @@
     /* Sidebar navigation */
     .sidebar {
       position: fixed;
-      left: max(16px, env(safe-area-inset-left, 16px));
+      left: max(20px, env(safe-area-inset-left, 20px));
       top: 50%;
       transform: translateY(-50%);
       z-index: 100;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 14px;
     }
 
     .sidebar-dot {
-      width: 10px;
-      height: 10px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
       background: rgba(255,255,255,0.15);
       border: none;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       padding: 0;
+      position: relative;
     }
 
     .sidebar-dot:hover {
@@ -531,15 +532,15 @@
       opacity: 1;
     }
 
-    /* Hide sidebar on very small screens */
+    /* Mobile sidebar */
     @media (max-width: 480px) {
       .sidebar {
-        left: 8px;
-        gap: 6px;
+        left: 12px;
+        gap: 12px;
       }
       .sidebar-dot {
-        width: 6px;
-        height: 6px;
+        width: 10px;
+        height: 10px;
       }
       .sidebar-label {
         display: none;
@@ -995,30 +996,36 @@ Railway (Cloud)    Supabase Auth</code>
     }
   });
 
-  // Sidebar navigation
+  // Sidebar navigation - grouped into clusters
   const slides = document.querySelectorAll('.slide');
   const sidebar = document.getElementById('sidebar');
   const container = document.getElementById('container');
 
-  const sectionLabels = [
-    'Intro', 'Problem', 'Vision', 'Core', 'Regions', 'Interface', 'Graph',
-    'BrainID', 'Auth', 'Fingerprint', '3D', 'Time', 'Future', 'Traits',
-    'Self Goals', 'Agents', 'Cloud', 'Learning', 'Tasks', 'Dual Brain',
-    'Features', 'Stack', 'Platform', 'Security', 'Why', 'End', 'Waitlist'
+  // Clusters: [startSlide, label]
+  const clusters = [
+    [0, 'Intro'],        // slides 0-3 (Intro, Problem, Vision, Core)
+    [4, 'Brain'],        // slides 4-7 (Regions, Interface, Graph, BrainID)
+    [8, 'Security'],     // slides 8-10 (Auth, Fingerprint, 3D)
+    [11, 'Time'],        // slides 11-13 (Time, Future, Traits)
+    [14, 'AI'],          // slides 14-19 (Self Goals, Agents, Cloud, Learning, Tasks, Dual Brain)
+    [20, 'Details'],     // slides 20-25 (Features, Stack, Platform, Security, Why, End)
+    [26, 'Join']         // slide 26 (Waitlist)
   ];
 
-  slides.forEach((slide, i) => {
+  clusters.forEach(([startSlide, label], i) => {
     const dot = document.createElement('button');
     dot.className = 'sidebar-dot';
     if (i === 0) dot.classList.add('active');
+    dot.dataset.start = startSlide;
+    dot.dataset.end = clusters[i + 1] ? clusters[i + 1][0] - 1 : slides.length - 1;
 
-    const label = document.createElement('span');
-    label.className = 'sidebar-label';
-    label.textContent = sectionLabels[i] || `${i + 1}`;
-    dot.appendChild(label);
+    const labelEl = document.createElement('span');
+    labelEl.className = 'sidebar-label';
+    labelEl.textContent = label;
+    dot.appendChild(labelEl);
 
     dot.addEventListener('click', () => {
-      slide.scrollIntoView({ behavior: 'smooth' });
+      slides[startSlide].scrollIntoView({ behavior: 'smooth' });
     });
 
     sidebar.appendChild(dot);
@@ -1029,10 +1036,12 @@ Railway (Cloud)    Supabase Auth</code>
   container.addEventListener('scroll', () => {
     const scrollPos = container.scrollTop;
     const windowHeight = window.innerHeight;
-    const currentIndex = Math.round(scrollPos / windowHeight);
+    const currentSlide = Math.round(scrollPos / windowHeight);
 
-    dots.forEach((dot, i) => {
-      dot.classList.toggle('active', i === currentIndex);
+    dots.forEach((dot) => {
+      const start = parseInt(dot.dataset.start);
+      const end = parseInt(dot.dataset.end);
+      dot.classList.toggle('active', currentSlide >= start && currentSlide <= end);
     });
   }, { passive: true });
 </script>
