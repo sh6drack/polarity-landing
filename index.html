@@ -2,63 +2,80 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="POLARITY - Your AI Exocortex. Map your brain, know yourself.">
   <title>POLARITY - Your AI Exocortex</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Helvetica Neue', 'Inter', Arial, sans-serif;
-      background: #0A0A0A;
-      color: #fff;
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
+    html {
+      scroll-behavior: smooth;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      background: #0A0A0A;
+      color: #fff;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Smooth scroll container */
+    .container {
+      scroll-snap-type: y mandatory;
+      overflow-y: auto;
+      height: 100vh;
+      scroll-behavior: smooth;
+    }
+
+    /* SLIDE BASE */
     .slide {
-      width: 1280px;
-      height: 720px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      width: 100%;
       background: #0A0A0A;
       position: relative;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
-      align-items: flex-start;
-      padding: 80px;
-      page-break-after: always;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: clamp(40px, 8vw, 100px);
+      scroll-snap-align: start;
     }
 
-    /* ORBITAL + ATOMS + SPECKLES */
+    /* Animated background particles */
     .slide::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
       background-image:
-        /* Core nucleus glow */
         radial-gradient(60px 60px at 88% 12%, rgba(78, 205, 196, 0.15) 0%, transparent 70%),
-
-        /* Large diffuse glows - Polarity colors */
         radial-gradient(100px 100px at 15% 25%, rgba(78, 205, 196, 0.08) 0%, transparent 70%),
         radial-gradient(120px 120px at 75% 70%, rgba(255, 160, 122, 0.07) 0%, transparent 70%),
         radial-gradient(90px 90px at 50% 50%, rgba(187, 143, 206, 0.06) 0%, transparent 70%),
-
-        /* Medium atoms with glowing cores - Teal */
         radial-gradient(4px 4px at 15% 20%, #4ECDC4 0%, rgba(78, 205, 196, 0.4) 40%, transparent 70%),
         radial-gradient(5px 5px at 88% 12%, #4ECDC4 0%, rgba(78, 205, 196, 0.5) 40%, transparent 70%),
         radial-gradient(3px 3px at 45% 85%, #4ECDC4 0%, rgba(78, 205, 196, 0.4) 40%, transparent 70%),
-
-        /* Medium atoms - Coral */
         radial-gradient(5px 5px at 75% 30%, #FFA07A 0%, rgba(255, 160, 122, 0.4) 40%, transparent 70%),
         radial-gradient(4px 4px at 25% 70%, #FFA07A 0%, rgba(255, 160, 122, 0.4) 40%, transparent 70%),
         radial-gradient(3px 3px at 90% 55%, #FFA07A 0%, rgba(255, 160, 122, 0.3) 40%, transparent 70%),
-
-        /* Medium atoms - Purple */
         radial-gradient(4px 4px at 60% 45%, #BB8FCE 0%, rgba(187, 143, 206, 0.4) 40%, transparent 70%),
         radial-gradient(5px 5px at 10% 60%, #BB8FCE 0%, rgba(187, 143, 206, 0.4) 40%, transparent 70%),
         radial-gradient(3px 3px at 35% 35%, #BB8FCE 0%, rgba(187, 143, 206, 0.3) 40%, transparent 70%),
-
-        /* Small floating speckles */
         radial-gradient(2px 2px at 5% 15%, rgba(78, 205, 196, 0.7) 0%, transparent 100%),
         radial-gradient(1.5px 1.5px at 12% 42%, rgba(255, 160, 122, 0.6) 0%, transparent 100%),
         radial-gradient(2px 2px at 8% 78%, rgba(187, 143, 206, 0.6) 0%, transparent 100%),
@@ -72,103 +89,149 @@
         radial-gradient(2px 2px at 78% 38%, rgba(255, 160, 122, 0.6) 0%, transparent 100%),
         radial-gradient(1.5px 1.5px at 85% 72%, rgba(187, 143, 206, 0.5) 0%, transparent 100%),
         radial-gradient(2px 2px at 92% 25%, rgba(78, 205, 196, 0.6) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 95% 95%, rgba(255, 160, 122, 0.5) 0%, transparent 100%),
-        radial-gradient(2px 2px at 18% 88%, rgba(187, 143, 206, 0.5) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 72% 12%, rgba(78, 205, 196, 0.5) 0%, transparent 100%);
+        radial-gradient(1.5px 1.5px at 95% 95%, rgba(255, 160, 122, 0.5) 0%, transparent 100%);
       pointer-events: none;
+      animation: float 20s ease-in-out infinite;
     }
 
-    /* Subtle orbital overlay */
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(-10px, 10px) scale(1.02); }
+      50% { transform: translate(5px, -5px) scale(0.98); }
+      75% { transform: translate(10px, 5px) scale(1.01); }
+    }
+
     .slide::after {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
       background:
-        radial-gradient(ellipse 500px 350px at 20% 30%, rgba(78, 205, 196, 0.025) 0%, transparent 50%),
-        radial-gradient(ellipse 400px 280px at 80% 65%, rgba(255, 160, 122, 0.02) 0%, transparent 50%),
-        radial-gradient(ellipse 450px 300px at 50% 80%, rgba(187, 143, 206, 0.02) 0%, transparent 50%);
+        radial-gradient(ellipse 50vw 35vh at 20% 30%, rgba(78, 205, 196, 0.025) 0%, transparent 50%),
+        radial-gradient(ellipse 40vw 28vh at 80% 65%, rgba(255, 160, 122, 0.02) 0%, transparent 50%),
+        radial-gradient(ellipse 45vw 30vh at 50% 80%, rgba(187, 143, 206, 0.02) 0%, transparent 50%);
       pointer-events: none;
     }
 
+    /* TYPOGRAPHY */
     h1 {
       font-weight: 800;
-      font-size: 120px;
+      font-size: clamp(48px, 12vw, 140px);
       letter-spacing: -0.05em;
       line-height: 0.9;
       text-transform: uppercase;
       position: relative;
       z-index: 1;
+      opacity: 0;
+      transform: translateY(40px);
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     h1.smaller {
-      font-size: 90px;
+      font-size: clamp(36px, 9vw, 100px);
     }
 
     h2 {
       font-weight: 300;
-      font-size: 42px;
+      font-size: clamp(20px, 4vw, 48px);
       letter-spacing: -0.02em;
-      opacity: 0.4;
-      margin-top: 16px;
+      opacity: 0;
+      margin-top: clamp(12px, 2vw, 20px);
       position: relative;
       z-index: 1;
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
     }
 
     p {
       font-weight: 300;
-      font-size: 26px;
-      line-height: 1.5;
-      opacity: 0.55;
-      max-width: 700px;
+      font-size: clamp(16px, 2.5vw, 28px);
+      line-height: 1.6;
+      opacity: 0;
+      max-width: min(700px, 90vw);
       position: relative;
       z-index: 1;
+      margin: 8px 0;
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    p:nth-of-type(1) { animation-delay: 0.2s; }
+    p:nth-of-type(2) { animation-delay: 0.3s; }
+    p:nth-of-type(3) { animation-delay: 0.4s; }
+    p:nth-of-type(4) { animation-delay: 0.5s; }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     ul {
       list-style: none;
       position: relative;
       z-index: 1;
+      text-align: left;
+      max-width: min(600px, 90vw);
     }
 
     li {
       font-weight: 300;
-      font-size: 22px;
-      opacity: 0.5;
-      margin: 10px 0;
+      font-size: clamp(14px, 2vw, 22px);
+      opacity: 0;
+      margin: clamp(8px, 1.5vw, 14px) 0;
+      transform: translateX(-20px);
+      animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    li:nth-child(1) { animation-delay: 0.1s; }
+    li:nth-child(2) { animation-delay: 0.15s; }
+    li:nth-child(3) { animation-delay: 0.2s; }
+    li:nth-child(4) { animation-delay: 0.25s; }
+    li:nth-child(5) { animation-delay: 0.3s; }
+    li:nth-child(6) { animation-delay: 0.35s; }
+
+    @keyframes slideIn {
+      to {
+        opacity: 0.6;
+        transform: translateX(0);
+      }
     }
 
     .num {
       font-weight: 100;
-      font-size: 180px;
-      opacity: 0.06;
+      font-size: clamp(80px, 20vw, 200px);
+      opacity: 0.04;
       position: absolute;
-      top: 50px;
-      right: 70px;
+      top: clamp(20px, 5vw, 60px);
+      right: clamp(30px, 6vw, 80px);
       letter-spacing: -0.05em;
+      user-select: none;
     }
 
     .label {
       font-weight: 500;
-      font-size: 11px;
+      font-size: clamp(9px, 1.2vw, 12px);
       text-transform: uppercase;
       letter-spacing: 0.3em;
-      opacity: 0.2;
-      margin-bottom: 16px;
+      opacity: 0.25;
+      margin-bottom: clamp(12px, 2vw, 20px);
       position: relative;
       z-index: 1;
     }
 
     code {
-      font-family: 'SF Mono', 'Monaco', monospace;
-      font-size: 18px;
-      opacity: 0.3;
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+      font-size: clamp(12px, 1.8vw, 18px);
+      opacity: 0.35;
       display: block;
-      white-space: pre;
+      white-space: pre-wrap;
+      word-break: break-word;
       position: relative;
       z-index: 1;
+      text-align: left;
+      max-width: 90vw;
     }
 
-    em { font-style: normal; opacity: 0.25; }
+    em { font-style: normal; opacity: 0.3; }
 
     /* Accent colors */
     .teal { color: #4ECDC4; opacity: 1; }
@@ -178,54 +241,246 @@
     /* Feature grid */
     .features {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 40px;
+      grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+      gap: clamp(6px, 1.5vw, 12px) clamp(20px, 4vw, 50px);
       position: relative;
       z-index: 1;
+      width: 100%;
+      max-width: min(800px, 90vw);
     }
 
     .features li {
-      font-size: 20px;
-      margin: 6px 0;
+      font-size: clamp(13px, 1.8vw, 18px);
+      margin: clamp(4px, 1vw, 8px) 0;
+      text-align: left;
     }
 
     /* Orbital icon */
     .orbital-icon {
       position: absolute;
-      top: 60px;
-      left: 80px;
-      width: 50px;
-      height: 50px;
-      opacity: 0.15;
+      top: clamp(30px, 5vw, 70px);
+      left: clamp(30px, 5vw, 90px);
+      width: clamp(30px, 5vw, 60px);
+      height: clamp(30px, 5vw, 60px);
+      opacity: 0.2;
+      animation: spin 30s linear infinite;
     }
 
-    /* Stats */
-    .stat {
-      font-weight: 100;
-      font-size: 80px;
-      letter-spacing: -0.04em;
-      line-height: 1;
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* FORM STYLES */
+    .form-container {
+      max-width: min(500px, 90vw);
+      width: 100%;
+    }
+
+    .waitlist-form {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .input-field {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: clamp(14px, 2vw, 18px) clamp(18px, 2.5vw, 26px);
+      font-size: clamp(14px, 1.8vw, 16px);
+      color: #fff;
+      font-family: inherit;
+      width: min(280px, 100%);
+      outline: none;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .input-field:focus {
+      border-color: #4ECDC4;
+      box-shadow: 0 0 0 4px rgba(78, 205, 196, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .input-field::placeholder {
+      color: rgba(255,255,255,0.3);
+    }
+
+    .submit-btn {
+      background: linear-gradient(135deg, #4ECDC4, #45B7AA);
+      border: none;
+      border-radius: 12px;
+      padding: clamp(14px, 2vw, 18px) clamp(24px, 3vw, 36px);
+      font-size: clamp(12px, 1.5vw, 14px);
+      font-weight: 600;
+      color: #000;
+      font-family: inherit;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, #5FE4DB, #4ECDC4);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 40px rgba(78, 205, 196, 0.35);
+    }
+
+    .submit-btn:hover::before {
+      opacity: 1;
+    }
+
+    .submit-btn:active {
+      transform: translateY(-1px);
+    }
+
+    .submit-btn span {
       position: relative;
       z-index: 1;
     }
 
-    .stat-label {
-      font-weight: 400;
-      font-size: 16px;
-      opacity: 0.35;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      margin-top: 8px;
+    .submit-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
     }
 
-    .stats-row {
-      display: flex;
-      gap: 80px;
-      margin-bottom: 40px;
+    .form-message {
+      margin-top: clamp(16px, 2.5vw, 24px);
+      font-size: clamp(14px, 1.6vw, 16px);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .form-message.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .footer-link {
+      margin-top: clamp(40px, 6vw, 70px);
+      opacity: 0.2;
+      font-size: clamp(12px, 1.4vw, 14px);
+      transition: opacity 0.3s;
+    }
+
+    .footer-link:hover {
+      opacity: 0.4;
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: clamp(20px, 4vw, 40px);
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0.3;
+      animation: bounce 2s ease-in-out infinite;
+      z-index: 10;
+    }
+
+    .scroll-indicator svg {
+      width: clamp(20px, 3vw, 30px);
+      height: clamp(20px, 3vw, 30px);
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+      40% { transform: translateX(-50%) translateY(-10px); }
+      60% { transform: translateX(-50%) translateY(-5px); }
+    }
+
+    /* Intersection Observer animations */
+    .slide .content {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .slide.in-view .content {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) {
+      .submit-btn:hover {
+        transform: none;
+        box-shadow: none;
+      }
+
+      .submit-btn:active {
+        transform: scale(0.98);
+      }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      html {
+        scroll-behavior: auto;
+      }
+    }
+
+    /* Small screens */
+    @media (max-width: 480px) {
+      .waitlist-form {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .input-field, .submit-btn {
+        width: 100%;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Landscape phones */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .slide {
+        min-height: auto;
+        padding: clamp(30px, 5vh, 60px) clamp(40px, 8vw, 100px);
+      }
+
+      h1 {
+        font-size: clamp(32px, 8vh, 80px);
+      }
+    }
+
+    /* High DPI screens */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+      body {
+        -webkit-font-smoothing: subpixel-antialiased;
+      }
     }
   </style>
 </head>
 <body>
+
+<div class="container">
 
 <!-- SLIDE 1: Title -->
 <div class="slide">
@@ -239,6 +494,11 @@
   <span class="label">AI Exocortex</span>
   <h1>POLARITY</h1>
   <h2>Your brain, mapped</h2>
+  <div class="scroll-indicator">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 5v14M5 12l7 7 7-7"/>
+    </svg>
+  </div>
 </div>
 
 <!-- SLIDE 2: Problem -->
@@ -453,7 +713,7 @@ Claude AI          MCP Protocol</code>
 
 <!-- SLIDE 20: End -->
 <div class="slide">
-  <svg class="orbital-icon" viewBox="0 0 100 100" style="opacity: 0.25;">
+  <svg class="orbital-icon" viewBox="0 0 100 100" style="opacity: 0.3;">
     <ellipse cx="50" cy="50" rx="40" ry="12" fill="none" stroke="#4ECDC4" stroke-width="2" transform="rotate(-60 50 50)"/>
     <ellipse cx="50" cy="50" rx="40" ry="12" fill="none" stroke="#FFA07A" stroke-width="2" transform="rotate(60 50 50)"/>
     <ellipse cx="50" cy="50" rx="40" ry="12" fill="none" stroke="#BB8FCE" stroke-width="2"/>
@@ -466,75 +726,49 @@ Claude AI          MCP Protocol</code>
 </div>
 
 <!-- WAITLIST -->
-<div class="slide" style="justify-content: center; align-items: center; text-align: center;">
-  <div style="max-width: 500px;">
+<div class="slide">
+  <div class="form-container">
     <span class="label" style="margin-bottom: 30px; display: block;">Coming Soon</span>
-    <h1 style="font-size: 72px; margin-bottom: 20px;">JOIN THE<br>WAITLIST</h1>
-    <p style="margin-bottom: 40px; opacity: 0.4;">Be the first to map your mind</p>
+    <h1 style="font-size: clamp(40px, 8vw, 80px); margin-bottom: 20px;">JOIN THE<br>WAITLIST</h1>
+    <p style="margin-bottom: clamp(30px, 5vw, 50px); opacity: 0.4;">Be the first to map your mind</p>
 
-    <form id="waitlist-form" style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+    <form id="waitlist-form" class="waitlist-form">
       <input
         type="email"
         name="email"
         placeholder="your@email.com"
         required
-        style="
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 8px;
-          padding: 16px 24px;
-          font-size: 16px;
-          color: #fff;
-          font-family: inherit;
-          width: 280px;
-          outline: none;
-          transition: border-color 0.2s;
-        "
-        onfocus="this.style.borderColor='#4ECDC4'"
-        onblur="this.style.borderColor='rgba(255,255,255,0.1)'"
+        class="input-field"
+        autocomplete="email"
       >
-      <button
-        type="submit"
-        style="
-          background: linear-gradient(135deg, #4ECDC4, #45B7AA);
-          border: none;
-          border-radius: 8px;
-          padding: 16px 32px;
-          font-size: 14px;
-          font-weight: 600;
-          color: #000;
-          font-family: inherit;
-          cursor: pointer;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          transition: transform 0.2s, box-shadow 0.2s;
-        "
-        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 30px rgba(78,205,196,0.3)'"
-        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
-      >
-        Notify Me
+      <button type="submit" class="submit-btn">
+        <span>Notify Me</span>
       </button>
     </form>
 
-    <p id="form-message" style="margin-top: 20px; opacity: 0; transition: opacity 0.3s;"></p>
+    <p id="form-message" class="form-message"></p>
 
-    <p style="margin-top: 60px; opacity: 0.2; font-size: 14px;">polarity-lab.com</p>
+    <p class="footer-link">polarity-lab.com</p>
   </div>
 </div>
 
-<script>
-  document.getElementById('waitlist-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const email = form.email.value;
-    const message = document.getElementById('form-message');
-    const button = form.querySelector('button');
+</div>
 
-    button.textContent = '...';
+<script>
+  // Smooth form handling
+  const form = document.getElementById('waitlist-form');
+  const message = document.getElementById('form-message');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = form.email.value;
+    const button = form.querySelector('button');
+    const originalText = button.querySelector('span').textContent;
+
+    button.querySelector('span').textContent = '...';
     button.disabled = true;
 
     try {
-      // Using Formspree - create account at formspree.io and replace with your form ID
       const response = await fetch('https://formspree.io/f/xblvelep', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -543,20 +777,69 @@ Claude AI          MCP Protocol</code>
 
       if (response.ok) {
         message.textContent = "You're on the list. We'll be in touch.";
-        message.style.opacity = '1';
         message.style.color = '#4ECDC4';
+        message.classList.add('visible');
         form.email.value = '';
       } else {
         throw new Error('Failed');
       }
     } catch (err) {
       message.textContent = 'Something went wrong. Try again.';
-      message.style.opacity = '1';
       message.style.color = '#FFA07A';
+      message.classList.add('visible');
     }
 
-    button.textContent = 'Notify Me';
+    button.querySelector('span').textContent = originalText;
     button.disabled = false;
+
+    setTimeout(() => {
+      message.classList.remove('visible');
+    }, 5000);
+  });
+
+  // Intersection Observer for scroll animations
+  const observerOptions = {
+    threshold: 0.2,
+    rootMargin: '0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.slide').forEach(slide => {
+    observer.observe(slide);
+  });
+
+  // Hide scroll indicator after first scroll
+  const scrollIndicator = document.querySelector('.scroll-indicator');
+  if (scrollIndicator) {
+    let hasScrolled = false;
+    document.querySelector('.container').addEventListener('scroll', () => {
+      if (!hasScrolled) {
+        hasScrolled = true;
+        scrollIndicator.style.opacity = '0';
+        scrollIndicator.style.transition = 'opacity 0.5s';
+      }
+    }, { passive: true });
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    const container = document.querySelector('.container');
+    const slideHeight = window.innerHeight;
+
+    if (e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault();
+      container.scrollBy({ top: slideHeight, behavior: 'smooth' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      container.scrollBy({ top: -slideHeight, behavior: 'smooth' });
+    }
   });
 </script>
 
