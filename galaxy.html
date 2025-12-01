@@ -2,16 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#030305">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
   <title>POLARITY</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     html, body {
       width: 100%; height: 100%;
@@ -20,583 +22,525 @@
       background: #030305;
       color: #fff;
       -webkit-font-smoothing: antialiased;
-      touch-action: none;
     }
 
-    canvas {
+    #canvas {
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
+      touch-action: pan-x pan-y;
     }
 
-    /* Minimal UI */
-    .ui {
+    .header {
       position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: max(16px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) 16px max(20px, env(safe-area-inset-left));
+      display: flex;
+      align-items: center;
+      gap: 12px;
       z-index: 100;
       pointer-events: none;
     }
 
-    .logo {
-      top: clamp(20px, 4vw, 40px);
-      left: clamp(20px, 4vw, 40px);
-      font-weight: 800;
-      font-size: clamp(11px, 1.5vw, 14px);
-      letter-spacing: 0.25em;
-      opacity: 0.4;
+    .header img {
+      width: 32px; height: 32px;
+    }
+
+    .header span {
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      opacity: 0.8;
     }
 
     .hint {
-      bottom: clamp(20px, 4vw, 40px);
+      position: fixed;
+      bottom: 50%;
       left: 50%;
-      transform: translateX(-50%);
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      opacity: 0.2;
-      text-transform: uppercase;
-      transition: opacity 0.5s;
+      transform: translate(-50%, 50%);
+      font-size: 14px;
+      font-weight: 300;
+      letter-spacing: 0.05em;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 50;
+      transition: opacity 0.6s;
+      text-align: center;
+      padding: 16px 28px;
+      background: rgba(0,0,0,0.7);
+      border-radius: 40px;
+      border: 1px solid rgba(255,255,255,0.1);
     }
 
-    .hint.hidden { opacity: 0; }
+    .hint.show { opacity: 0.9; }
 
-    /* Detail panel */
+    .cta {
+      position: fixed;
+      bottom: max(24px, env(safe-area-inset-bottom));
+      right: max(24px, env(safe-area-inset-right));
+      z-index: 100;
+    }
+
+    .cta button {
+      background: #4ECDC4;
+      border: none;
+      border-radius: 50px;
+      padding: 18px 32px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #000;
+      font-family: inherit;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      box-shadow: 0 6px 30px rgba(78, 205, 196, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .cta button:active {
+      transform: scale(0.95);
+    }
+
     .panel {
       position: fixed;
       bottom: 0; left: 0; right: 0;
-      background: linear-gradient(to top, rgba(3,3,5,0.98) 0%, rgba(3,3,5,0.9) 70%, transparent 100%);
-      padding: clamp(30px, 6vw, 60px);
-      padding-top: clamp(60px, 10vw, 100px);
+      background: rgba(8,8,12,0.98);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 28px;
+      padding-bottom: max(28px, calc(env(safe-area-inset-bottom) + 16px));
       transform: translateY(100%);
-      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-      pointer-events: none;
+      transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
       z-index: 200;
+      max-height: 65vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    .panel.active {
-      transform: translateY(0);
-      pointer-events: auto;
+    .panel.open { transform: translateY(0); }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
     }
 
-    .panel-inner {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .panel-category {
+    .panel-cat {
       font-size: 10px;
-      letter-spacing: 0.3em;
+      font-weight: 500;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      opacity: 0.3;
-      margin-bottom: 8px;
+      opacity: 0.4;
+      margin-bottom: 6px;
     }
 
     .panel-title {
-      font-size: clamp(28px, 6vw, 42px);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      margin-bottom: 16px;
-      line-height: 1.1;
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .panel-close {
+      width: 44px; height: 44px;
+      background: rgba(255,255,255,0.06);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-left: 16px;
     }
 
     .panel-desc {
-      font-size: clamp(14px, 2vw, 16px);
-      font-weight: 200;
+      font-size: 15px;
+      font-weight: 300;
       line-height: 1.7;
-      opacity: 0.6;
-      max-width: 500px;
+      opacity: 0.7;
     }
 
     .panel-tags {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 20px;
+      margin-top: 18px;
     }
 
     .panel-tag {
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      padding: 6px 12px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      padding: 8px 14px;
+      background: rgba(255,255,255,0.06);
       border-radius: 20px;
     }
 
-    .panel-close {
-      position: absolute;
-      top: clamp(20px, 4vw, 30px);
-      right: clamp(20px, 4vw, 30px);
-      width: 40px; height: 40px;
-      background: rgba(255,255,255,0.05);
-      border: none;
-      border-radius: 50%;
-      color: #fff;
-      font-size: 20px;
-      cursor: pointer;
-      opacity: 0.5;
-      transition: opacity 0.3s, transform 0.3s;
-      pointer-events: auto;
-    }
-
-    .panel-close:hover {
-      opacity: 1;
-      transform: scale(1.1);
-    }
-
-    /* CTA */
-    .cta {
-      position: fixed;
-      bottom: clamp(20px, 4vw, 40px);
-      right: clamp(20px, 4vw, 40px);
-      z-index: 300;
-    }
-
-    .cta-btn {
-      background: rgba(78, 205, 196, 0.9);
-      border: none;
-      border-radius: 30px;
-      padding: 14px 28px;
-      font-size: 11px;
-      font-weight: 600;
-      color: #000;
-      font-family: inherit;
-      letter-spacing: 0.12em;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      pointer-events: auto;
-    }
-
-    .cta-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 30px rgba(78, 205, 196, 0.4);
-    }
-
-    /* Modal */
     .modal {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(3,3,5,0.9);
+      inset: 0;
+      background: rgba(3,3,5,0.95);
       display: flex;
       align-items: center;
       justify-content: center;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.4s;
+      transition: all 0.3s;
       z-index: 500;
-      padding: 20px;
+      padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
     }
 
-    .modal.active {
-      opacity: 1;
-      visibility: visible;
-    }
+    .modal.open { opacity: 1; visibility: visible; }
 
-    .modal-content {
-      background: rgba(10,10,15,0.95);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: clamp(30px, 6vw, 48px);
-      max-width: 400px;
+    .modal-box {
+      background: rgba(12,12,18,0.98);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 36px 28px;
+      max-width: 380px;
       width: 100%;
       text-align: center;
-      transform: scale(0.95);
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .modal.active .modal-content {
-      transform: scale(1);
+      position: relative;
     }
 
     .modal h2 {
       font-size: 24px;
-      font-weight: 800;
-      margin-bottom: 8px;
+      font-weight: 900;
+      margin-bottom: 6px;
     }
 
     .modal p {
-      font-size: 13px;
-      opacity: 0.4;
-      margin-bottom: 24px;
+      font-size: 14px;
+      font-weight: 300;
+      opacity: 0.5;
+      margin-bottom: 28px;
     }
 
     .modal form {
       display: flex;
-      gap: 10px;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .modal input {
-      flex: 1;
+      width: 100%;
       background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 14px 18px;
-      font-size: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 16px 20px;
+      font-size: 16px;
       color: #fff;
       font-family: inherit;
       outline: none;
-      min-width: 0;
     }
 
     .modal input:focus {
-      border-color: rgba(78, 205, 196, 0.5);
+      border-color: rgba(78,205,196,0.6);
     }
 
-    .modal input::placeholder {
-      color: rgba(255,255,255,0.25);
-    }
+    .modal input::placeholder { color: rgba(255,255,255,0.3); }
 
     .modal button[type="submit"] {
       background: #4ECDC4;
       border: none;
-      border-radius: 10px;
-      padding: 14px 20px;
-      font-size: 11px;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 14px;
       font-weight: 600;
       color: #000;
       font-family: inherit;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.06em;
       cursor: pointer;
-      white-space: nowrap;
     }
 
-    .modal .close {
+    .modal .x {
       position: absolute;
-      top: 15px; right: 15px;
+      top: 12px; right: 12px;
+      width: 44px; height: 44px;
       background: none;
       border: none;
       color: #fff;
-      font-size: 24px;
+      font-size: 26px;
       cursor: pointer;
-      opacity: 0.3;
+      opacity: 0.4;
     }
 
-    .modal .close:hover { opacity: 0.7; }
-
-    .form-msg {
+    .msg {
       margin-top: 16px;
-      font-size: 13px;
-      opacity: 0;
-      transition: opacity 0.3s;
+      font-size: 14px;
+      min-height: 20px;
     }
 
-    .form-msg.show { opacity: 1; }
-
-    @media (max-width: 500px) {
-      .modal form { flex-direction: column; }
-      .modal button[type="submit"] { padding: 14px; }
+    @media (min-width: 600px) {
+      .modal form { flex-direction: row; }
+      .modal input { flex: 1; }
+      .modal button[type="submit"] { padding: 16px 28px; }
+      .panel { padding: 36px; }
+      .panel-title { font-size: 32px; }
     }
   </style>
 </head>
 <body>
 
-<canvas id="c"></canvas>
+<canvas id="canvas"></canvas>
 
-<div class="ui logo">POLARITY</div>
-<div class="ui hint" id="hint">Drag to explore</div>
-
-<div class="panel" id="panel">
-  <button class="panel-close" id="panelClose">×</button>
-  <div class="panel-inner">
-    <div class="panel-category" id="panelCat"></div>
-    <h2 class="panel-title" id="panelTitle"></h2>
-    <p class="panel-desc" id="panelDesc"></p>
-    <div class="panel-tags" id="panelTags"></div>
-  </div>
+<div class="header">
+  <img src="icon.svg" alt="">
+  <span>POLARITY</span>
 </div>
 
+<div class="hint" id="hint">Tap a node to explore</div>
+
 <div class="cta">
-  <button class="cta-btn" id="ctaBtn">WAITLIST</button>
+  <button id="cta">WAITLIST</button>
+</div>
+
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <div>
+      <div class="panel-cat" id="pCat"></div>
+      <div class="panel-title" id="pTitle"></div>
+    </div>
+    <button class="panel-close" id="pClose">×</button>
+  </div>
+  <div class="panel-desc" id="pDesc"></div>
+  <div class="panel-tags" id="pTags"></div>
 </div>
 
 <div class="modal" id="modal">
-  <div class="modal-content">
-    <button class="close" id="modalClose">×</button>
+  <div class="modal-box">
+    <button class="x" id="mx">×</button>
     <h2>Join the Waitlist</h2>
     <p>Be the first to map your mind</p>
     <form id="form">
-      <input type="email" name="email" placeholder="you@email.com" required>
+      <input type="email" name="email" placeholder="you@email.com" required autocomplete="email">
       <button type="submit">JOIN</button>
     </form>
-    <div class="form-msg" id="formMsg"></div>
+    <div class="msg" id="msg"></div>
   </div>
 </div>
 
 <script>
+// Data
 const nodes = [
-  { id: 'core', label: 'POLARITY', cat: 'Core', title: 'Your AI Exocortex',
-    desc: 'A 3D neural knowledge graph mapping your mind to anatomically accurate brain regions. Talk naturally—Polarity extracts what you know.',
-    tags: ['3D Brain', 'Knowledge Graph', 'Claude AI'], color: [78, 205, 196], size: 1.8, z: 0 },
-  { id: 'brain', label: 'BRAINID', cat: 'Identity', title: 'Cognitive Identity',
-    desc: '20 nodes unlock your unique identifier. Your knowledge graph becomes your credential—a fingerprint that evolves with you.',
-    tags: ['Threshold', 'Portable', 'Evolving'], color: [78, 205, 196], size: 0.9, z: -2 },
-  { id: 'auth', label: 'AUTH', cat: 'Security', title: 'Brain as Password',
-    desc: 'Challenge-response from graph pathways. NBKDF key derivation. AES-256-GCM encrypted .polarity files.',
-    tags: ['NBKDF', 'Challenges', 'Encrypted'], color: [187, 143, 206], size: 0.85, z: -1.5 },
-  { id: 'time', label: 'TIME', cat: 'Temporal', title: 'Git for Your Mind',
-    desc: 'Snapshots at midnight. Travel to any date. See exactly what changed in your knowledge.',
-    tags: ['Snapshots', 'History', 'Diff'], color: [255, 160, 122], size: 0.8, z: 1.5 },
-  { id: 'future', label: 'FUTURE', cat: 'Projection', title: 'Chat with Tomorrow',
-    desc: 'Set a target date. AI generates projected knowledge. Chat with who you\'ll become.',
-    tags: ['Timelines', 'Goals', 'Learning'], color: [78, 205, 196], size: 0.85, z: 2 },
-  { id: 'traits', label: 'TRAITS', cat: 'Psychology', title: 'Pattern Detection',
-    desc: 'Personality patterns from conversation. What you emphasize, avoid, how you think.',
-    tags: ['Personality', 'Values', 'Style'], color: [187, 143, 206], size: 0.75, z: -1 },
-  { id: 'agent', label: 'AGENTS', cat: 'Execution', title: 'AI Agent Modes',
-    desc: 'Auto, Ask, or Plan mode. Full IDE integration—code view, file explorer, terminal.',
-    tags: ['Auto', 'Ask', 'Plan', 'IDE'], color: [255, 160, 122], size: 0.8, z: 1 },
-  { id: 'cloud', label: 'CLOUD', cat: 'Sync', title: 'Zero-Config Sync',
-    desc: 'Device-based auth. BrainID verification. Free tier, $15 basic, $50 pro.',
-    tags: ['Sync', 'Tiers', 'API Proxy'], color: [78, 205, 196], size: 0.7, z: -0.5 },
-  { id: 'dual', label: 'DUAL', cat: 'Meta', title: 'AI That Knows Itself',
-    desc: 'Polarity maintains its own knowledge base. Self-goals for continuous improvement.',
-    tags: ['Self-Aware', 'Patterns', 'Goals'], color: [255, 160, 122], size: 0.75, z: 0.5 }
+  { id:'core', label:'POLARITY', cat:'Core', title:'Your AI Exocortex',
+    desc:'A 3D neural knowledge graph mapping your mind to anatomically accurate brain regions. Talk naturally—Polarity extracts what you know.',
+    tags:['3D Brain','Knowledge Graph','Claude AI'], color:[78,205,196], r:1.5 },
+  { id:'brain', label:'BRAINID', cat:'Identity', title:'Cognitive Identity',
+    desc:'20 nodes unlock your unique identifier. Your knowledge graph becomes your credential—a fingerprint that evolves with you.',
+    tags:['Threshold','Portable','Evolving'], color:[78,205,196], r:0.7 },
+  { id:'auth', label:'AUTH', cat:'Security', title:'Brain as Password',
+    desc:'Challenge-response from graph pathways. NBKDF key derivation. AES-256-GCM encrypted .polarity files.',
+    tags:['NBKDF','Encrypted'], color:[187,143,206], r:0.65 },
+  { id:'time', label:'TIME', cat:'Temporal', title:'Git for Your Mind',
+    desc:'Snapshots at midnight. Travel to any date. See exactly what changed in your knowledge.',
+    tags:['Snapshots','History'], color:[255,160,122], r:0.6 },
+  { id:'future', label:'FUTURE', cat:'Projection', title:'Chat with Tomorrow',
+    desc:'Set a target date. AI generates projected knowledge. Chat with who you\'ll become.',
+    tags:['Timelines','Goals'], color:[78,205,196], r:0.65 },
+  { id:'traits', label:'TRAITS', cat:'Psychology', title:'Pattern Detection',
+    desc:'Personality patterns from conversation. What you emphasize, avoid, how you think.',
+    tags:['Personality','Values'], color:[187,143,206], r:0.55 },
+  { id:'agent', label:'AGENTS', cat:'Execution', title:'AI Agent Modes',
+    desc:'Auto, Ask, or Plan mode. Full IDE integration—code view, file explorer, terminal.',
+    tags:['Auto','Ask','Plan'], color:[255,160,122], r:0.6 },
+  { id:'cloud', label:'CLOUD', cat:'Sync', title:'Zero-Config Sync',
+    desc:'Device-based auth. BrainID verification. Free tier, $15 basic, $50 pro.',
+    tags:['Sync','Tiers'], color:[78,205,196], r:0.5 },
+  { id:'dual', label:'DUAL', cat:'Meta', title:'AI That Knows Itself',
+    desc:'Polarity maintains its own knowledge base. Self-goals for continuous improvement.',
+    tags:['Self-Aware','Goals'], color:[255,160,122], r:0.55 }
 ];
 
-// Canvas setup
-const canvas = document.getElementById('c');
+// Setup
+const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-let W, H, cx, cy;
-let dpr = Math.min(window.devicePixelRatio || 1, 2);
+let W, H, cx, cy, scale;
+const dpr = Math.min(devicePixelRatio || 1, 2);
 
 function resize() {
-  W = window.innerWidth;
-  H = window.innerHeight;
-  canvas.width = W * dpr;
-  canvas.height = H * dpr;
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-  ctx.scale(dpr, dpr);
-  cx = W / 2;
-  cy = H / 2;
+  W = innerWidth; H = innerHeight;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cx = W / 2; cy = H / 2;
+  scale = Math.min(W, H) * 0.35;
 }
 resize();
-window.addEventListener('resize', resize);
+addEventListener('resize', resize);
 
-// Camera
-let camX = 0, camY = 0, camZ = 5;
-let rotX = 0.3, rotY = 0;
-let targetRotX = 0.3, targetRotY = 0;
-let isDragging = false;
-let lastX, lastY;
-let autoRotate = true;
-
-// Touch/mouse handling
-function onStart(x, y) {
-  isDragging = true;
-  lastX = x; lastY = y;
-  autoRotate = false;
-  document.getElementById('hint').classList.add('hidden');
-}
-
-function onMove(x, y) {
-  if (!isDragging) return;
-  const dx = x - lastX;
-  const dy = y - lastY;
-  targetRotY += dx * 0.005;
-  targetRotX += dy * 0.005;
-  targetRotX = Math.max(-1, Math.min(1, targetRotX));
-  lastX = x; lastY = y;
-}
-
-function onEnd() {
-  isDragging = false;
-}
-
-canvas.addEventListener('mousedown', e => onStart(e.clientX, e.clientY));
-canvas.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
-canvas.addEventListener('mouseup', onEnd);
-canvas.addEventListener('mouseleave', onEnd);
-
-canvas.addEventListener('touchstart', e => {
-  e.preventDefault();
-  const t = e.touches[0];
-  onStart(t.clientX, t.clientY);
-}, { passive: false });
-
-canvas.addEventListener('touchmove', e => {
-  e.preventDefault();
-  const t = e.touches[0];
-  onMove(t.clientX, t.clientY);
-}, { passive: false });
-
-canvas.addEventListener('touchend', onEnd);
-
-// Project 3D to 2D
-function project(x, y, z) {
-  const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
-  const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
-
-  let x1 = x * cosY - z * sinY;
-  let z1 = x * sinY + z * cosY;
-  let y1 = y * cosX - z1 * sinX;
-  let z2 = y * sinX + z1 * cosX;
-
-  z2 += camZ;
-  const scale = 300 / z2;
-
-  return {
-    x: cx + x1 * scale,
-    y: cy + y1 * scale,
-    scale: scale,
-    z: z2
-  };
+// Positions
+const pos = [{ x: 0, y: 0, z: 0 }];
+for (let i = 1; i < nodes.length; i++) {
+  const a = ((i - 1) / (nodes.length - 1)) * Math.PI * 2;
+  const depth = [0, -1.2, -0.8, 1, 1.3, -0.4, 0.7, -0.2, 0.4][i];
+  pos.push({ x: Math.cos(a) * 2, y: Math.sin(a) * 1.2, z: depth });
 }
 
 // Stars
-const stars = [];
-for (let i = 0; i < 200; i++) {
-  stars.push({
-    x: (Math.random() - 0.5) * 20,
-    y: (Math.random() - 0.5) * 20,
-    z: (Math.random() - 0.5) * 20,
-    size: Math.random() * 1.5
-  });
+const stars = Array.from({ length: 150 }, () => ({
+  x: (Math.random() - 0.5) * 12,
+  y: (Math.random() - 0.5) * 12,
+  z: (Math.random() - 0.5) * 12,
+  s: 0.3 + Math.random() * 0.8
+}));
+
+// State
+let rotX = 0.2, rotY = 0;
+let tRotX = 0.2, tRotY = 0;
+let dragging = false, startX, startY, startRX, startRY;
+let auto = true;
+let t = 0;
+
+// Project
+function proj(x, y, z) {
+  const cX = Math.cos(rotX), sX = Math.sin(rotX);
+  const cY = Math.cos(rotY), sY = Math.sin(rotY);
+  const x1 = x * cY - z * sY;
+  const z1 = x * sY + z * cY;
+  const y1 = y * cX - z1 * sX;
+  const z2 = y * sX + z1 * cX + 5;
+  const s = scale / z2;
+  return { x: cx + x1 * s, y: cy + y1 * s, s, z: z2 };
 }
 
-// Node positions (orbital)
-const nodePositions = [];
-const coreIdx = 0;
-nodePositions[0] = { x: 0, y: 0, z: 0 };
-
-const orbitRadius = 2.5;
-for (let i = 1; i < nodes.length; i++) {
-  const angle = ((i - 1) / (nodes.length - 1)) * Math.PI * 2;
-  const zOffset = nodes[i].z || 0;
-  nodePositions[i] = {
-    x: Math.cos(angle) * orbitRadius,
-    y: Math.sin(angle) * orbitRadius * 0.6,
-    z: zOffset
-  };
+// Input
+function getXY(e) {
+  const t = e.touches?.[0];
+  return t ? { x: t.clientX, y: t.clientY } : { x: e.clientX, y: e.clientY };
 }
 
-// Detect node click
-let selectedNode = null;
+function down(e) {
+  const p = getXY(e);
+  dragging = true;
+  startX = p.x; startY = p.y;
+  startRX = tRotX; startRY = tRotY;
+  auto = false;
+}
 
-canvas.addEventListener('click', e => {
-  if (isDragging) return;
+function move(e) {
+  if (!dragging) return;
+  const p = getXY(e);
+  tRotY = startRY + (p.x - startX) * 0.006;
+  tRotX = Math.max(-0.7, Math.min(0.7, startRX + (p.y - startY) * 0.006));
+}
 
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
+function up(e) {
+  if (!dragging) return;
+  dragging = false;
+  const p = getXY(e.changedTouches?.[0] || e);
+  if (Math.abs(p.x - startX) + Math.abs(p.y - startY) < 12) tap(p);
+}
 
-  // Check nodes (sorted by z for correct picking)
+canvas.onmousedown = down;
+canvas.onmousemove = move;
+canvas.onmouseup = up;
+canvas.onmouseleave = () => dragging = false;
+canvas.ontouchstart = e => { e.preventDefault(); down(e); };
+canvas.ontouchmove = e => { e.preventDefault(); move(e); };
+canvas.ontouchend = up;
+
+// Tap
+function tap(p) {
   const projected = nodes.map((n, i) => {
-    const p = nodePositions[i];
-    const proj = project(p.x, p.y, p.z);
-    return { ...proj, idx: i, node: n };
+    const o = pos[i];
+    const pr = proj(o.x, o.y + (i ? Math.sin(t + i) * 0.02 : 0), o.z);
+    return { ...pr, n, i };
   }).sort((a, b) => b.z - a.z);
 
-  for (const p of projected) {
-    const r = p.node.size * p.scale * 15;
-    const dx = mx - p.x;
-    const dy = my - p.y;
-    if (dx * dx + dy * dy < r * r) {
-      showPanel(p.node);
+  for (const pr of projected) {
+    const r = Math.max(pr.n.r * pr.s * 0.8, 25);
+    if ((p.x - pr.x) ** 2 + (p.y - pr.y) ** 2 < r ** 2) {
+      openPanel(pr.n);
       return;
     }
   }
-});
+}
 
 // Panel
 const panel = document.getElementById('panel');
-const panelCat = document.getElementById('panelCat');
-const panelTitle = document.getElementById('panelTitle');
-const panelDesc = document.getElementById('panelDesc');
-const panelTags = document.getElementById('panelTags');
-
-function showPanel(node) {
-  panelCat.textContent = node.cat;
-  panelTitle.textContent = node.title;
-  panelTitle.style.color = `rgb(${node.color.join(',')})`;
-  panelDesc.textContent = node.desc;
-  panelTags.innerHTML = node.tags.map(t => `<span class="panel-tag">${t}</span>`).join('');
-  panel.classList.add('active');
-  selectedNode = node;
+function openPanel(n) {
+  document.getElementById('pCat').textContent = n.cat;
+  document.getElementById('pTitle').textContent = n.title;
+  document.getElementById('pTitle').style.color = `rgb(${n.color})`;
+  document.getElementById('pDesc').textContent = n.desc;
+  document.getElementById('pTags').innerHTML = n.tags.map(t => `<span class="panel-tag">${t}</span>`).join('');
+  panel.classList.add('open');
+  document.getElementById('hint').classList.remove('show');
 }
-
-document.getElementById('panelClose').addEventListener('click', () => {
-  panel.classList.remove('active');
-  selectedNode = null;
-});
+document.getElementById('pClose').onclick = () => panel.classList.remove('open');
 
 // Modal
 const modal = document.getElementById('modal');
-document.getElementById('ctaBtn').addEventListener('click', () => modal.classList.add('active'));
-document.getElementById('modalClose').addEventListener('click', () => modal.classList.remove('active'));
-modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+document.getElementById('cta').onclick = () => modal.classList.add('open');
+document.getElementById('mx').onclick = () => modal.classList.remove('open');
+modal.onclick = e => { if (e.target === modal) modal.classList.remove('open'); };
 
 // Form
-document.getElementById('form').addEventListener('submit', async e => {
+document.getElementById('form').onsubmit = async e => {
   e.preventDefault();
   const email = e.target.email.value;
-  const msg = document.getElementById('formMsg');
-
+  const msg = document.getElementById('msg');
   try {
-    const res = await fetch('https://formspree.io/f/xblvelep', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const r = await fetch('https://formspree.io/f/xblvelep', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
     });
+    if (r.ok) { msg.textContent = "You're in."; msg.style.color = '#4ECDC4'; e.target.email.value = ''; }
+    else throw 0;
+  } catch { msg.textContent = 'Try again.'; msg.style.color = '#FFA07A'; }
+  setTimeout(() => msg.textContent = '', 4000);
+};
 
-    if (res.ok) {
-      msg.textContent = "You're on the list.";
-      msg.style.color = '#4ECDC4';
-      e.target.email.value = '';
-    } else throw new Error();
-  } catch {
-    msg.textContent = 'Try again.';
-    msg.style.color = '#FFA07A';
+// Keyboard
+onkeydown = e => {
+  if (e.key === 'Escape') {
+    panel.classList.remove('open');
+    modal.classList.remove('open');
   }
+};
 
-  msg.classList.add('show');
-  setTimeout(() => msg.classList.remove('show'), 4000);
-});
+// Hint
+setTimeout(() => document.getElementById('hint').classList.add('show'), 1200);
+setTimeout(() => document.getElementById('hint').classList.remove('show'), 5000);
 
-// Animation
-let time = 0;
-
+// Draw
 function draw() {
-  time += 0.016;
-
-  // Smooth rotation
-  if (autoRotate) {
-    targetRotY += 0.002;
-  }
-  rotX += (targetRotX - rotX) * 0.08;
-  rotY += (targetRotY - rotY) * 0.08;
+  t += 0.012;
+  if (auto) tRotY += 0.002;
+  rotX += (tRotX - rotX) * 0.08;
+  rotY += (tRotY - rotY) * 0.08;
 
   ctx.fillStyle = '#030305';
   ctx.fillRect(0, 0, W, H);
 
   // Stars
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
   for (const s of stars) {
-    const p = project(s.x, s.y, s.z);
+    const p = proj(s.x, s.y, s.z);
     if (p.z > 0.5) {
-      const alpha = Math.min(1, p.scale / 80) * 0.5;
-      ctx.globalAlpha = alpha;
+      ctx.globalAlpha = Math.min(0.7, p.s / 60);
+      ctx.fillStyle = '#fff';
       ctx.beginPath();
-      ctx.arc(p.x, p.y, s.size * p.scale * 0.02, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, Math.max(0.6, s.s * p.s * 0.012), 0, Math.PI * 2);
       ctx.fill();
     }
   }
   ctx.globalAlpha = 1;
 
-  // Connections
-  const projectedNodes = nodes.map((n, i) => {
-    const pos = nodePositions[i];
-    // Subtle float
-    const floatY = i === 0 ? 0 : Math.sin(time + i) * 0.05;
-    return { ...project(pos.x, pos.y + floatY, pos.z), node: n, idx: i };
+  // Project nodes
+  const pn = nodes.map((n, i) => {
+    const o = pos[i];
+    const float = i ? Math.sin(t + i) * 0.02 : 0;
+    return { ...proj(o.x, o.y + float, o.z), n, i };
   });
 
-  // Draw connections to core
-  const core = projectedNodes[0];
-  for (let i = 1; i < projectedNodes.length; i++) {
-    const p = projectedNodes[i];
-    const gradient = ctx.createLinearGradient(core.x, core.y, p.x, p.y);
-    gradient.addColorStop(0, 'rgba(78, 205, 196, 0.15)');
-    gradient.addColorStop(1, 'rgba(78, 205, 196, 0.02)');
-    ctx.strokeStyle = gradient;
+  // Connections
+  const core = pn[0];
+  for (let i = 1; i < pn.length; i++) {
+    const p = pn[i];
+    const g = ctx.createLinearGradient(core.x, core.y, p.x, p.y);
+    g.addColorStop(0, 'rgba(78,205,196,0.18)');
+    g.addColorStop(1, 'rgba(78,205,196,0.02)');
+    ctx.strokeStyle = g;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(core.x, core.y);
@@ -604,56 +548,42 @@ function draw() {
     ctx.stroke();
   }
 
-  // Sort by z for drawing
-  projectedNodes.sort((a, b) => a.z - b.z);
-
-  // Draw nodes
-  for (const p of projectedNodes) {
-    const n = p.node;
-    const r = n.size * p.scale * 12;
+  // Sort & draw
+  pn.sort((a, b) => a.z - b.z);
+  for (const p of pn) {
+    const n = p.n;
+    const r = Math.max(10, n.r * p.s * 0.7);
     const isCore = n.id === 'core';
 
     // Glow
-    const glowSize = isCore ? r * 3 : r * 2;
-    const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowSize);
-    glow.addColorStop(0, `rgba(${n.color.join(',')}, ${isCore ? 0.3 : 0.15})`);
+    const gR = r * (isCore ? 2.5 : 1.8);
+    const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, gR);
+    glow.addColorStop(0, `rgba(${n.color},${isCore ? 0.3 : 0.15})`);
     glow.addColorStop(1, 'transparent');
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, glowSize, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, gR, 0, Math.PI * 2);
     ctx.fill();
 
     // Node
-    const grad = ctx.createRadialGradient(p.x - r * 0.3, p.y - r * 0.3, 0, p.x, p.y, r);
-    grad.addColorStop(0, `rgba(${n.color.map(c => Math.min(255, c + 60)).join(',')}, 1)`);
-    grad.addColorStop(1, `rgb(${n.color.join(',')})`);
+    const grad = ctx.createRadialGradient(p.x - r * 0.25, p.y - r * 0.25, 0, p.x, p.y, r);
+    grad.addColorStop(0, `rgba(${n.color.map(c => Math.min(255, c + 40))},1)`);
+    grad.addColorStop(1, `rgb(${n.color})`);
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
     ctx.fill();
 
     // Label
-    const labelAlpha = Math.min(1, (p.scale - 30) / 50);
-    if (labelAlpha > 0) {
-      ctx.fillStyle = `rgba(255,255,255,${labelAlpha * 0.5})`;
-      ctx.font = `500 ${Math.max(9, r * 0.4)}px Inter`;
-      ctx.textAlign = 'center';
-      ctx.fillText(n.label, p.x, p.y + r + 16);
-    }
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    ctx.font = `500 ${Math.max(10, r * 0.4)}px Inter`;
+    ctx.textAlign = 'center';
+    ctx.fillText(n.label, p.x, p.y + r + 16);
   }
 
   requestAnimationFrame(draw);
 }
-
 draw();
-
-// Keyboard
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    panel.classList.remove('active');
-    modal.classList.remove('active');
-  }
-});
 </script>
 
 </body>
