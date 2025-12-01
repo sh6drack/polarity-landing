@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="POLARITY - Your AI Exocortex. Map your brain, know yourself.">
+  <title>POLARITY - Your AI Exocortex</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #050508;
+      color: #fff;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Stars background */
+    .stars {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      opacity: 0;
+      animation: twinkle var(--duration) ease-in-out infinite;
+      animation-delay: var(--delay);
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.1; }
+      50% { opacity: var(--max-opacity); }
+    }
+
+    /* Canvas for connections */
+    #connections {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Node container */
+    .galaxy {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    /* Individual nodes */
+    .node {
+      position: absolute;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 10;
+    }
+
+    .node-core {
+      width: var(--size);
+      height: var(--size);
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--color), var(--color-dark));
+      box-shadow:
+        0 0 20px var(--glow),
+        0 0 40px var(--glow),
+        inset 0 0 20px rgba(255,255,255,0.1);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .node:hover .node-core {
+      transform: scale(1.2);
+      box-shadow:
+        0 0 30px var(--glow),
+        0 0 60px var(--glow),
+        0 0 100px var(--glow),
+        inset 0 0 30px rgba(255,255,255,0.2);
+    }
+
+    .node-label {
+      position: absolute;
+      top: calc(100% + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      white-space: nowrap;
+      opacity: 0.5;
+      transition: opacity 0.3s;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    }
+
+    .node:hover .node-label {
+      opacity: 1;
+    }
+
+    /* Central node (Polarity) */
+    .node.central {
+      z-index: 100;
+    }
+
+    .node.central .node-core {
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle at 30% 30%, #4ECDC4, #2a7a74);
+      box-shadow:
+        0 0 40px rgba(78, 205, 196, 0.4),
+        0 0 80px rgba(78, 205, 196, 0.2),
+        0 0 120px rgba(78, 205, 196, 0.1),
+        inset 0 0 40px rgba(255,255,255,0.1);
+    }
+
+    .node.central .node-label {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+    }
+
+    /* Orbital rings around central */
+    .orbital-ring {
+      position: absolute;
+      border: 1px solid rgba(78, 205, 196, 0.15);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: rotate var(--duration) linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Detail panel */
+    .detail-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: rgba(10, 10, 15, 0.95);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 500px;
+      width: 90%;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1000;
+      backdrop-filter: blur(20px);
+    }
+
+    .detail-panel.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .detail-panel h2 {
+      font-size: 32px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .detail-panel .subtitle {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      opacity: 0.4;
+      margin-bottom: 24px;
+    }
+
+    .detail-panel p {
+      font-size: 16px;
+      line-height: 1.7;
+      opacity: 0.7;
+      margin-bottom: 12px;
+    }
+
+    .detail-panel .features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .detail-panel .feature-tag {
+      font-size: 11px;
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .detail-panel .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: all 0.3s;
+    }
+
+    .detail-panel .close-btn:hover {
+      opacity: 1;
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* Overlay */
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s;
+      z-index: 999;
+    }
+
+    .overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 30px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 500;
+      pointer-events: none;
+    }
+
+    .logo {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+
+    .tagline {
+      font-size: 12px;
+      opacity: 0.3;
+      letter-spacing: 0.1em;
+    }
+
+    /* CTA Button */
+    .cta-container {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 500;
+      text-align: center;
+    }
+
+    .cta-btn {
+      background: linear-gradient(135deg, #4ECDC4, #45B7AA);
+      border: none;
+      border-radius: 30px;
+      padding: 16px 40px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #000;
+      font-family: inherit;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: auto;
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 40px rgba(78, 205, 196, 0.4);
+    }
+
+    .cta-hint {
+      margin-top: 12px;
+      font-size: 11px;
+      opacity: 0.3;
+      letter-spacing: 0.1em;
+    }
+
+    /* Waitlist Modal */
+    .waitlist-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: rgba(10, 10, 15, 0.98);
+      border: 1px solid rgba(78, 205, 196, 0.2);
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 450px;
+      width: 90%;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1001;
+      text-align: center;
+    }
+
+    .waitlist-modal.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .waitlist-modal h2 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .waitlist-modal .subtitle {
+      font-size: 14px;
+      opacity: 0.4;
+      margin-bottom: 32px;
+    }
+
+    .waitlist-form {
+      display: flex;
+      gap: 12px;
+    }
+
+    .waitlist-form input {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 14px;
+      color: #fff;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .waitlist-form input:focus {
+      border-color: #4ECDC4;
+      box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+    }
+
+    .waitlist-form input::placeholder {
+      color: rgba(255,255,255,0.3);
+    }
+
+    .waitlist-form button {
+      background: #4ECDC4;
+      border: none;
+      border-radius: 12px;
+      padding: 16px 24px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #000;
+      font-family: inherit;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: all 0.3s;
+    }
+
+    .waitlist-form button:hover {
+      background: #5FE4DB;
+    }
+
+    .form-message {
+      margin-top: 16px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .form-message.visible {
+      opacity: 1;
+    }
+
+    /* Instructions */
+    .instructions {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      opacity: 0.25;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.15; }
+      50% { opacity: 0.35; }
+    }
+
+    /* Colors */
+    .teal { --color: #4ECDC4; --color-dark: #2a7a74; --glow: rgba(78, 205, 196, 0.3); }
+    .coral { --color: #FFA07A; --color-dark: #a65d45; --glow: rgba(255, 160, 122, 0.3); }
+    .purple { --color: #BB8FCE; --color-dark: #6d4d7a; --glow: rgba(187, 143, 206, 0.3); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .node-core { transform: scale(0.7); }
+      .node.central .node-core { width: 80px; height: 80px; }
+      .node-label { font-size: 9px; }
+      .header { padding: 20px; }
+      .detail-panel { padding: 32px; }
+      .detail-panel h2 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Stars -->
+<div class="stars" id="stars"></div>
+
+<!-- Connection lines -->
+<canvas id="connections"></canvas>
+
+<!-- Galaxy of nodes -->
+<div class="galaxy" id="galaxy"></div>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">Polarity</div>
+  <div class="tagline">Your brain, mapped</div>
+</div>
+
+<!-- Instructions -->
+<div class="instructions">Click nodes to explore</div>
+
+<!-- CTA -->
+<div class="cta-container">
+  <button class="cta-btn" id="waitlist-btn">Join the Waitlist</button>
+  <div class="cta-hint">Be the first to map your mind</div>
+</div>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay"></div>
+
+<!-- Detail Panel -->
+<div class="detail-panel" id="detail-panel">
+  <button class="close-btn" id="close-detail">&times;</button>
+  <div class="subtitle" id="detail-category"></div>
+  <h2 id="detail-title"></h2>
+  <div id="detail-content"></div>
+  <div class="features" id="detail-features"></div>
+</div>
+
+<!-- Waitlist Modal -->
+<div class="waitlist-modal" id="waitlist-modal">
+  <button class="close-btn" id="close-waitlist">&times;</button>
+  <h2>Join the Waitlist</h2>
+  <div class="subtitle">Be the first to map your mind</div>
+  <form class="waitlist-form" id="waitlist-form">
+    <input type="email" name="email" placeholder="your@email.com" required>
+    <button type="submit">Notify Me</button>
+  </form>
+  <div class="form-message" id="form-message"></div>
+</div>
+
+<script>
+// Node data
+const nodes = [
+  {
+    id: 'polarity',
+    label: 'Polarity',
+    category: 'Core',
+    title: 'Your AI Exocortex',
+    content: `<p>A 3D neural knowledge graph that maps your mind to anatomically accurate brain regions.</p>
+              <p>You don't enter data. You have a conversation. Polarity extracts what you know.</p>`,
+    features: ['3D Brain', 'Knowledge Graph', 'Conversational AI'],
+    size: 120,
+    color: 'teal',
+    x: 50, y: 50,
+    central: true
+  },
+  {
+    id: 'brainid',
+    label: 'BrainID',
+    category: 'Identity',
+    title: 'Your Cognitive Identity',
+    content: `<p>20 nodes unlock your unique identifier. Your knowledge graph becomes your credential.</p>
+              <p>A cognitive fingerprint that evolves with you. Progress tracking with threshold celebration.</p>`,
+    features: ['20-Node Threshold', 'Portable Identity', 'Progress Tracking'],
+    size: 50,
+    color: 'teal',
+    x: 28, y: 30
+  },
+  {
+    id: 'auth',
+    label: 'Polarity Auth',
+    category: 'Security',
+    title: 'Brain as Password',
+    content: `<p>Challenge-response authentication from graph pathways. Temporal snapshots as selectable credentials.</p>
+              <p>NBKDF key derivation from cognitive fingerprints. AES-256-GCM encrypted .polarity files.</p>`,
+    features: ['NBKDF', 'Challenge-Response', '.polarity Files', 'AES-256-GCM'],
+    size: 45,
+    color: 'purple',
+    x: 18, y: 50
+  },
+  {
+    id: 'fingerprint',
+    label: 'Fingerprint',
+    category: 'Cryptography',
+    title: 'Cognitive Fingerprint',
+    content: `<p>Unique identifier derived from your knowledge topology: regional distribution, hub centrality, clustering coefficients.</p>
+              <p>Temporal signatures, embedding centroids, edge weight statistics. Patent pending.</p>`,
+    features: ['Topology', 'Connectivity', 'Semantic', 'Temporal'],
+    size: 40,
+    color: 'coral',
+    x: 25, y: 68
+  },
+  {
+    id: 'regions',
+    label: 'Brain Regions',
+    category: 'Architecture',
+    title: '9 Anatomical Regions',
+    content: `<p>Not a metaphor. A 3D model mapped to real brain regions. Your knowledge, spatially organized.</p>
+              <p>Prefrontal (goals), Hippocampus (memories), Temporal (language), Motor (skills), Amygdala (emotions), Parietal (spatial).</p>`,
+    features: ['Prefrontal', 'Hippocampus', 'Temporal', 'Motor', 'Amygdala', 'Parietal'],
+    size: 55,
+    color: 'coral',
+    x: 72, y: 28
+  },
+  {
+    id: 'traits',
+    label: 'Traits',
+    category: 'Psychology',
+    title: 'Trait Detection',
+    content: `<p>Personality patterns from conversation. Cognitive style detection. Values and communication analysis.</p>
+              <p>What you emphasize, what you avoid, how you think.</p>`,
+    features: ['Personality', 'Cognitive Style', 'Values', 'Communication'],
+    size: 42,
+    color: 'purple',
+    x: 82, y: 48
+  },
+  {
+    id: 'future',
+    label: 'Future Self',
+    category: 'Projection',
+    title: 'Chat with Your Future',
+    content: `<p>Set a target date and scenario. AI generates projected knowledge. Chat with who you'll become.</p>
+              <p>Multiple timelines, drift detection, goal tracking. Become your future self.</p>`,
+    features: ['Timelines', 'Drift Detection', 'Goal Tracking', 'Learning Paths'],
+    size: 48,
+    color: 'teal',
+    x: 75, y: 70
+  },
+  {
+    id: 'time',
+    label: 'Time Machine',
+    category: 'Temporal',
+    title: 'Git for Your Mind',
+    content: `<p>Snapshots at midnight. Travel to any date. See what changed.</p>
+              <p>Your knowledge evolution over time. Select historical snapshots as auth credentials.</p>`,
+    features: ['Snapshots', 'History', 'Diff View', 'Restore'],
+    size: 44,
+    color: 'coral',
+    x: 58, y: 78
+  },
+  {
+    id: 'agents',
+    label: 'Agents',
+    category: 'Execution',
+    title: 'AI Agent Modes',
+    content: `<p>Auto mode: automatically edit files. Ask mode: confirm before changes. Plan mode: create without editing.</p>
+              <p>Full IDE integration with code view, file explorer, and terminal.</p>`,
+    features: ['Auto', 'Ask', 'Plan', 'IDE Integration'],
+    size: 46,
+    color: 'purple',
+    x: 38, y: 82
+  },
+  {
+    id: 'cloud',
+    label: 'Cloud',
+    category: 'Sync',
+    title: 'Zero-Config Cloud',
+    content: `<p>Zero-configuration API proxy. Device-based anonymous auth. BrainID verification for accounts.</p>
+              <p>Free tier, $15/mo basic, $50/mo pro. Railway + Supabase infrastructure.</p>`,
+    features: ['API Proxy', 'Device Auth', 'Tiered Pricing', 'Brain Sync'],
+    size: 43,
+    color: 'teal',
+    x: 20, y: 82
+  },
+  {
+    id: 'dual',
+    label: 'Dual Brain',
+    category: 'Meta',
+    title: 'AI That Knows Itself',
+    content: `<p>Polarity has its own knowledge base. Tracks patterns about you. Compare your brain with Polarity's.</p>
+              <p>Self-goals for continuous improvement. Rate-limited, always user-serving.</p>`,
+    features: ['Self-Awareness', 'Pattern Tracking', 'Self-Goals', 'Improvement'],
+    size: 47,
+    color: 'coral',
+    x: 35, y: 22
+  }
+];
+
+// Create stars
+function createStars() {
+  const container = document.getElementById('stars');
+  const count = 150;
+
+  for (let i = 0; i < count; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.setProperty('--duration', (2 + Math.random() * 4) + 's');
+    star.style.setProperty('--delay', Math.random() * 4 + 's');
+    star.style.setProperty('--max-opacity', 0.3 + Math.random() * 0.5);
+    container.appendChild(star);
+  }
+}
+
+// Create nodes
+function createNodes() {
+  const galaxy = document.getElementById('galaxy');
+
+  nodes.forEach(node => {
+    const el = document.createElement('div');
+    el.className = `node ${node.color} ${node.central ? 'central' : ''}`;
+    el.id = `node-${node.id}`;
+    el.style.left = `${node.x}%`;
+    el.style.top = `${node.y}%`;
+    el.style.setProperty('--size', node.size + 'px');
+    el.style.transform = 'translate(-50%, -50%)';
+
+    el.innerHTML = `
+      <div class="node-core"></div>
+      <div class="node-label">${node.label}</div>
+    `;
+
+    el.addEventListener('click', () => showDetail(node));
+
+    galaxy.appendChild(el);
+  });
+
+  // Add orbital rings around central
+  const central = document.getElementById('node-polarity');
+  [200, 320, 450].forEach((size, i) => {
+    const ring = document.createElement('div');
+    ring.className = 'orbital-ring';
+    ring.style.width = size + 'px';
+    ring.style.height = size + 'px';
+    ring.style.left = '50%';
+    ring.style.top = '50%';
+    ring.style.setProperty('--duration', (40 + i * 20) + 's');
+    if (i % 2) ring.style.animationDirection = 'reverse';
+    central.appendChild(ring);
+  });
+}
+
+// Draw connections
+function drawConnections() {
+  const canvas = document.getElementById('connections');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    draw();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Connect all nodes to central
+    const central = nodes.find(n => n.central);
+    const others = nodes.filter(n => !n.central);
+
+    others.forEach(node => {
+      const x1 = central.x / 100 * canvas.width;
+      const y1 = central.y / 100 * canvas.height;
+      const x2 = node.x / 100 * canvas.width;
+      const y2 = node.y / 100 * canvas.height;
+
+      const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+      gradient.addColorStop(0, 'rgba(78, 205, 196, 0.3)');
+      gradient.addColorStop(1, 'rgba(78, 205, 196, 0.05)');
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+
+    // Connect some nodes to each other
+    const connections = [
+      ['brainid', 'auth'],
+      ['auth', 'fingerprint'],
+      ['fingerprint', 'cloud'],
+      ['regions', 'traits'],
+      ['future', 'time'],
+      ['time', 'agents'],
+      ['agents', 'cloud'],
+      ['dual', 'brainid']
+    ];
+
+    connections.forEach(([id1, id2]) => {
+      const n1 = nodes.find(n => n.id === id1);
+      const n2 = nodes.find(n => n.id === id2);
+
+      const x1 = n1.x / 100 * canvas.width;
+      const y1 = n1.y / 100 * canvas.height;
+      const x2 = n2.x / 100 * canvas.width;
+      const y2 = n2.y / 100 * canvas.height;
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+}
+
+// Show detail panel
+function showDetail(node) {
+  const panel = document.getElementById('detail-panel');
+  const overlay = document.getElementById('overlay');
+
+  document.getElementById('detail-category').textContent = node.category;
+  document.getElementById('detail-title').textContent = node.title;
+  document.getElementById('detail-title').style.color =
+    node.color === 'teal' ? '#4ECDC4' :
+    node.color === 'coral' ? '#FFA07A' : '#BB8FCE';
+  document.getElementById('detail-content').innerHTML = node.content;
+
+  const featuresEl = document.getElementById('detail-features');
+  featuresEl.innerHTML = node.features.map(f =>
+    `<span class="feature-tag">${f}</span>`
+  ).join('');
+
+  panel.classList.add('active');
+  overlay.classList.add('active');
+}
+
+// Close panels
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('active');
+  document.getElementById('overlay').classList.remove('active');
+}
+
+function closeWaitlist() {
+  document.getElementById('waitlist-modal').classList.remove('active');
+  document.getElementById('overlay').classList.remove('active');
+}
+
+// Waitlist
+function showWaitlist() {
+  document.getElementById('waitlist-modal').classList.add('active');
+  document.getElementById('overlay').classList.add('active');
+}
+
+// Form handling
+document.getElementById('waitlist-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = e.target.email.value;
+  const message = document.getElementById('form-message');
+
+  try {
+    const response = await fetch('https://formspree.io/f/xblvelep', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    if (response.ok) {
+      message.textContent = "You're on the list. We'll be in touch.";
+      message.style.color = '#4ECDC4';
+      e.target.email.value = '';
+    } else {
+      throw new Error('Failed');
+    }
+  } catch (err) {
+    message.textContent = 'Something went wrong. Try again.';
+    message.style.color = '#FFA07A';
+  }
+
+  message.classList.add('visible');
+  setTimeout(() => message.classList.remove('visible'), 5000);
+});
+
+// Event listeners
+document.getElementById('close-detail').addEventListener('click', closeDetail);
+document.getElementById('close-waitlist').addEventListener('click', closeWaitlist);
+document.getElementById('overlay').addEventListener('click', () => {
+  closeDetail();
+  closeWaitlist();
+});
+document.getElementById('waitlist-btn').addEventListener('click', showWaitlist);
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeDetail();
+    closeWaitlist();
+  }
+});
+
+// Initialize
+createStars();
+createNodes();
+drawConnections();
+
+// Subtle float animation for nodes
+function animateNodes() {
+  const time = Date.now() * 0.001;
+
+  document.querySelectorAll('.node:not(.central)').forEach((node, i) => {
+    const offsetX = Math.sin(time + i) * 3;
+    const offsetY = Math.cos(time + i * 0.7) * 3;
+    node.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
+  });
+
+  requestAnimationFrame(animateNodes);
+}
+animateNodes();
+</script>
+
+</body>
+</html>
